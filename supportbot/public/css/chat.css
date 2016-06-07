@@ -1,0 +1,76 @@
+.commentArea {
+    font: 14px;
+    padding: 0 10px;
+    margin-top: 20px;
+	line-height: 1.4;
+}
+
+.bubbledOption {
+    padding: 5px 9px;
+    float: right;
+	margin-right: 8px;
+    border-radius: 8px;
+	margin-top: -20px;
+    background-color: #07D;
+    color: white;
+	cursor: pointer;
+	text-decoration: underline;
+}
+
+.bubbledLeft,.bubbledRight {
+    margin-top: 20px;
+    padding: 5px 9px;
+    max-width: 80%;
+    clear: both;
+    position: relative;
+}
+
+.bubbledLeft{
+    float: left;
+    margin-right: auto;
+    -webkit-border-radius: 8px 8px 8px 0px;
+    -moz-border-radius: 8px 8px 8px 0px;
+    -o-border-radius: 8px 8px 8px 0px;
+    -ms-border-radius: 8px 8px 8px 0px;
+    border-radius: 8px 8px 8px 0px;
+	background-color: #d1d8dd;
+
+    /*background-color: #07D;
+    color: #ffffff;*/
+}
+
+.bubbledLeft:before {
+    border-bottom: 10px solid #d1d8dd;
+    border-left: 9px solid rgba(0, 0, 0, 0);
+    position: absolute;
+    bottom: 0;
+    left: -8px;
+    content: "";
+}
+
+.bubbledRight{
+    float: right;
+    margin-left: auto;
+    text-align: right;
+    -webkit-border-radius: 8px 8px 0px 8px;
+    -moz-border-radius: 8px 8px 0px 8px;
+    -o-border-radius: 8px 8px 0px 8px;
+    -ms-border-radius: 8px 8px 0px 8px;
+    border-radius: 8px 8px 0px 8px;
+    /*background-color: #d1d8dd;*/
+
+    background-color: #07D;
+    color: #ffffff;
+
+}
+
+.bubbledRight:before {
+    border-bottom: 9px solid #07D;
+    border-right: 9px solid rgba(0, 0, 0, 0);
+    position: absolute;
+    bottom: 0;
+    right: -8px;
+    content: "";
+}
+
+

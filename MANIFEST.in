@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include supportbot *.css
+recursive-include supportbot *.csv
+recursive-include supportbot *.html
+recursive-include supportbot *.ico
+recursive-include supportbot *.js
+recursive-include supportbot *.json
+recursive-include supportbot *.md
+recursive-include supportbot *.png
+recursive-include supportbot *.py
+recursive-include supportbot *.svg
+recursive-include supportbot *.txt
+recursive-exclude supportbot *.pyc
