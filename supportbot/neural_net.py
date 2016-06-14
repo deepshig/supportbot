@@ -19,7 +19,7 @@ def nonlin(x,deriv=False):
 def find_max():
     max_link = max_word = max_like = max_read = 1
 
-    rows = frappe.db.sql("""SELECT incoming_link_count, reads, like_score, word_count FROM tabposts;""", as_dict=True, debug=True)
+    rows = frappe.db.sql("""SELECT incoming_link_count, `reads`, like_score, word_count FROM tabposts;""", as_dict=True, debug=True)
 
     for row in rows:
         if row.incoming_link_count > max_link:
@@ -44,12 +44,12 @@ def gen_vector(name, max_word, max_link, max_like, max_read, score):
     link = float(doc.incoming_link_count)/max_link
     fit_x = float(doc.fitness)
     score_x = float(score)
-    doc = float(doc.is_doc)
+    isdoc = float(doc.is_doc)
     if(doc.reply_to_post_number):
         reply = float(1)
     else:
         reply = float(0)
-    x_in = np.array([word, like, read, link, reply, doc, score_x])
+    x_in = np.array([word, like, read, link, reply, isdoc, score_x])
     return (x_in, fit_x)
 
 
@@ -61,7 +61,7 @@ def gen_ip_op(question):
     y = []
     name1 = []
 
-    out = frappe.db.sql("""SELECT name, MATCH(raw) AGAINST(%s IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION) AS score FROM tabposts WHERE MATCH(raw) AGAINST(%s IN NATURAL LANGUAGE MODE WITH QUERY EXPANSION) and created_at >= '2014-01-01' ORDER BY score DESC LIMIT %d ;""".format(start=start), (question, question, max_answers), as_dict=True, debug=True)
+    out = frappe.db.sql("""SELECT name, MATCH(raw) AGAINST(%s IN NATURAL LANGUAGE MODE) AS score FROM tabposts WHERE MATCH(raw) AGAINST(%s IN NATURAL LANGUAGE MODE) and created_at >= '2014-01-01' ORDER BY score DESC LIMIT %s ;""", (question, question, max_answers), as_dict=True, debug=True)
 
     for row in out:
         x_in, fit_x = gen_vector(row.name, max_word, max_link, max_like, max_read, row.score)
@@ -73,13 +73,14 @@ def gen_ip_op(question):
     Y = np.array([y])
     name = np.array([name1])
     Y = Y.T 
+    name = name.T
     return (X, Y, name)
 
 
 @frappe.whitelist(allow_guest=True)
 def neural_network(question):
 
-    X, Y, name = gen_ip_op()
+    X, Y, name = gen_ip_op(question)
 
     np.random.seed(1)
 
@@ -109,7 +110,7 @@ def neural_network(question):
 
         # in what direction is the target l1?
         # were we really sure? if so, don't change too much.                                                                            
-        l1_delta = l1_error * nonlin(l3,True)
+        l1_delta = l1_error * nonlin(l1,True)
 
         # update weights
         syn1 += l1.T.dot(l2_delta)
@@ -118,17 +119,25 @@ def neural_network(question):
     return (l2, name)
 
 @frappe.whitelist(allow_guest=True)
-def best_answer(question):
-    l2, name = neural_network(question)
-    i=0
-    max_i = 0
-    max_fit = float(0)
-    for ans in l2:
-        if(ans > max_fit):
-            max_fit = float(ans)
-            max_i = i
-        i++
-    best_name = name[max_i]
-    doc = frappe.get_doc('posts', best_name)
-    return doc.raw
+def sort(l2, name):
+    n = len(l2)
+
+    print name, len(name)
+    print l2, len(l2)
+
+    for i in range(0, n):
+        for j in range(0, n-i-1):
+            if l2[j] < l2[j+1]:
+                l2[j], l2[j+1] = l2[j+1], l2[j]
+                name[j], name[j+1] = name[j+1], name[j]
+
+    return (l2, name)
+
+@frappe.whitelist(allow_guest=True)
+def answer(question, i=0):
+    l2, _name = neural_network(question)
+    l2, _name = sort(l2, _name)
+
+    doc = frappe.get_doc('posts', str(_name[i][0]))
+    return doc
 

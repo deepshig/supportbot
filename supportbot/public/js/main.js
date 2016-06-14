@@ -2,6 +2,7 @@ var chat =
 {
 	mode: null,
 	start: 0,
+	iter: 0,
 	last_message_from_user: null,
 	last_message_from_bot: null,
 	fit1: 0,
@@ -15,6 +16,14 @@ var chat =
 				chat.get_answer()
 			else 
 				chat.add_comment('Go ahead, type something', true);	
+		}
+
+		else if(chat.mode == 'neural_net')
+		{
+			if(chat.last_message_from_user)
+				chat.neural_net()
+			else
+				chat.add_comment('Go ahead, type something', true);
 		}
 
 		else if(chat.mode == 'fitness')
@@ -34,6 +43,55 @@ var chat =
 			}
 		}
 		
+	},
+
+	neural_net: function()
+	{
+		chat.last_question = chat.last_message_from_user;	
+		$.ajax(
+		{
+			url: '/api/method/supportbot.neural_net.answer',
+			data:
+			{
+				question: chat.last_question,
+				i: chat.iter
+			},
+			dataType: 'json',
+			success: function(r)
+			{
+				if(r.message) 
+				{
+					chat.name1 = r.message.name;
+					console.log(chat.name1)
+					//console.log(r.message.r)
+					chat.add_comment('I found this:\n\n' + markdown(r.message.raw), true);
+					chat.add_comment('Do you want another answer?', true);
+					chat.add_option(
+					[
+						{
+							label: 'Yes',
+							action: function() 
+							{
+								// get another answer
+								chat.iter++;
+								chat.last_message_from_user = chat.last_question;
+								chat.neural_net();
+							}
+						},
+						{
+							label: 'No',
+							action: function() 
+							{
+								chat.add_comment('Cool!\n So ask us something more..', true)
+								chat.iter = 0;
+							}
+						}
+					]);					
+				} 
+				else 
+					chat.add_comment('Sorry could not find anything for that query. Ask something else?', true);	
+			}
+		})
 	},
 
 	set_fitness: function()
@@ -168,8 +226,27 @@ $(document).ready(function()
 	});
 
 	console.log('Started successfully!')
-	chat.mode = 'question';
-	chat.add_comment('Hello, I am Umair and can help you get started with ERPNext. Ask me a question', true);
+	chat.mode = 'confused';
+	chat.add_comment('Are you a trainer or user?', true);
+	chat.add_option(
+				[
+					{
+						label: 'Trainer',
+						action: function() 
+						{
+							chat.mode = 'question'
+							chat.add_comment('Hi!, Come, Help us train this bot for ERPNext. Ask me a question', true);
+						}
+					},
+					{
+						label: 'User',
+						action: function() 
+						{
+							chat.mode = 'neural_net'
+							chat.add_comment('Hello, I am Umair and can help you get started with ERPNext. Ask me a question', true);
+						}
+					}
+				]);
 });
 
 var markdown = function(txt) 

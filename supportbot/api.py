@@ -1,11 +1,12 @@
 import frappe
+#import neural_net
 
 @frappe.whitelist(allow_guest=True)
 def get_answer(question, start=0):
 	
 	out = frappe.db.sql("""SELECT name, raw, MATCH(raw) AGAINST(%s IN NATURAL LANGUAGE MODE) AS score FROM tabposts WHERE MATCH(raw) AGAINST(%s IN NATURAL LANGUAGE MODE) and created_at >= '2014-01-01' ORDER BY score DESC LIMIT {start}, 1 ;""".format(start=start), (question, question), as_dict=True, debug=True)
 
-	print out
+	#print out
 
 	if out:
 		return out[0]
@@ -29,6 +30,15 @@ def set_fitness(_fit, name):
 	doc.save(ignore_permissions=True)
 	frappe.db.commit()
 	return
+
+@frappe.whitelist(allow_guest=True)
+def best_answer(question, i=0):
+    if i==0:
+        l2, name = neural_network(question)
+        l2, name = sort(l2, name)
+
+    doc = frappe.get_doc('posts', name[i])
+    return (doc.raw, doc.name)
 
 
 

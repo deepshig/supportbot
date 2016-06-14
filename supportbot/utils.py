@@ -7,7 +7,7 @@ import frappe, os
 import psycopg2 
 
 def import_posts():
-	conn = psycopg2.connect(database="search_bot", user="postgres", password="deep", host="192.168.0.110", port="5431")
+	conn = psycopg2.connect(database="supportbot", user="postgres", password="deep", host="127.0.0.1", port="5432")
 	print "Opened database successfully"
 
 	cur = conn.cursor()
@@ -15,11 +15,12 @@ def import_posts():
 	#print input_string
 
 
-	cur.execute("SELECT id, like_score, reads, word_count, created_at, reply_to_post_number, incoming_link_count, raw, is_doc, fitness, rank FROM posts;")
+	cur.execute("SELECT id, like_score, reads, word_count, created_at, reply_to_post_number, incoming_link_count, raw, is_doc, fitness FROM posts;")
 	rows = cur.fetchall()
 
-	frappe.db.sql('delete from `tabposts`')
-
+	frappe.db.sql('DELETE FROM tabposts;')
+	print "Hello"
+	# i=1
 
 	for row in rows:
 		iden = row[0]  
@@ -32,7 +33,7 @@ def import_posts():
 		data = unicode(row[7], 'utf-8')
 		doc = row[8]
 		fit = float(row[9])	
-		rank = float(row[10])
+		#rank = float(row[10])
 		# print iden
 		# print read
 		# print likes
@@ -55,12 +56,15 @@ def import_posts():
 				'reads': read,
 				'like_score': likes,
 				'word_count': word,
-				'rank': rank,
 				'fitness': fit,
-				'is_doc': doc
+				'is_doc': doc,
+				'no_reviewed': 0
 			}).insert()
-
-
+		# print str(i) + " : Inserted!"
+		# i = i+1
+		print "Inserted!"
+		
+	print "\n All done!"
 	#conn.commit()
 	conn.close()
 	frappe.db.commit()
