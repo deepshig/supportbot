@@ -1,4 +1,5 @@
 import frappe
+from frappe.utils import now
 #import neural_net
 
 @frappe.whitelist(allow_guest=True)
@@ -32,13 +33,35 @@ def set_fitness(_fit, name):
 	return
 
 @frappe.whitelist(allow_guest=True)
-def best_answer(question, i=0):
-    if i==0:
-        l2, name = neural_network(question)
-        l2, name = sort(l2, name)
+def set_log(msg, bot, session):
+	print "set_log function : api.py"
+	#frappe.db.sql('DELETE FROM tabconversation_log;')
+	frappe.get_doc({
+				'doctype': 'conversation_log',
+				'message': msg,
+				'from_bot': bot,
+				'session_id': session,
+				'timestamp': now()
+			}).insert()
+	frappe.db.commit()
+	return
 
-    doc = frappe.get_doc('posts', name[i])
-    return (doc.raw, doc.name)
+@frappe.whitelist(allow_guest=True)
+def feed_detail(unam, email, cntry, dmn, fb):
+	print "feed_detail function : api.py"
+	#frappe.db.sql('DELETE FROM tabuser_details;')
+	frappe.get_doc({
+				'doctype': 'user_details',
+				'uname': unam,
+				'email_id': email,
+				'country': cntry,
+				'domain': dmn,
+				'feedback': fb
+			}).insert()
+	frappe.db.commit()
+	return
+
+
 
 
 
