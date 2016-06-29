@@ -19,15 +19,22 @@ def set_fitness(_fit, name):
 	#print "In set_fitness : api.py"
 	doc = frappe.get_doc('posts', name)
 
-	old_fit = float(doc.fitness)
-	no_rev = doc.no_reviewed
+	if doc.from_neural==0:		
+		old_fit = float(doc.fitness)
+		no_rev = doc.no_reviewed
 
-	new_fit = float((old_fit*no_rev)) + float(_fit)/10
-	no_rev = no_rev + 1
-	new_fit = float(new_fit)/no_rev
+		new_fit = float((old_fit*no_rev)) + float(_fit)/10
+		no_rev = no_rev + 1
+		new_fit = float(new_fit)/no_rev
 
-	doc.no_reviewed = no_rev
-	doc.fitness = float(new_fit)
+		doc.no_reviewed = no_rev
+		doc.fitness = float(new_fit)
+
+	else:
+		doc.fitness = float(_fit)
+		doc.from_neural = 0
+		doc.no_reviewed = 1
+
 	doc.save(ignore_permissions=True)
 	frappe.db.commit()
 	return

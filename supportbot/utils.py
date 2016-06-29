@@ -2,12 +2,15 @@
 
 from __future__ import unicode_literals
 
-import frappe, os
+import os
+
+import frappe
+from frappe.utils import now
 
 import psycopg2 
 
 def import_posts():
-	conn = psycopg2.connect(database="supportbot", user="postgres", password="deep", host="127.0.0.1", port="5432")
+	conn = psycopg2.connect(database="supportbot", user="postgres", password="qwe", host="127.0.0.1", port="5432")
 	print "Opened database successfully"
 
 	cur = conn.cursor()
@@ -33,18 +36,6 @@ def import_posts():
 		data = unicode(row[7], 'utf-8')
 		doc = row[8]
 		fit = float(row[9])	
-		#rank = float(row[10])
-		# print iden
-		# print read
-		# print likes
-		# print word
-		# print create_date
-		# print reply
-		# print link
-		# print doc
-		# print fit
-		# print rank
-		# print data	
 
 		frappe.get_doc({
 				'doctype': 'posts',
@@ -60,12 +51,71 @@ def import_posts():
 				'is_doc': doc,
 				'no_reviewed': 0
 			}).insert()
-		# print str(i) + " : Inserted!"
-		# i = i+1
 		print "Inserted!"
 		
 	print "\n All done!"
-	#conn.commit()
 	conn.close()
 	frappe.db.commit()
+	return
+
+def import_docs():
+	out = frappe.db.sql("""SELECT AVG(`reads`) AS avg_r, AVG(like_score) AS avg_l, AVG(incoming_link_count) AS avg_in FROM tabposts;""", as_dict=True, debug=True)
+
+	for root, dirs, files in os.walk("/home/frappe-office/en"):
+		for file in files:
+			if file.endswith(".md"):
+				file_path = os.path.join(root, file)
+				with open(file_path, 'r') as content_file:
+					content = content_file.read()
+					frappe.get_doc({
+							'doctype': 'posts',
+							'raw': unicode(content, 'utf-8'),
+							'created_at': now(),
+							'reply_to_post_number': 0,
+							'incoming_link_count': out[0].avg_in,
+							'reads': out[0].avg_r,
+							'like_score': out[0].avg_l,
+							'word_count': len(content.split()),
+							'fitness': 0.0,
+							'is_doc': 1,
+							'no_reviewed': 0
+						}).insert()
+
+	print "All done!"
+	frappe.db.commit()
+	return
+
+def update_avg_word_sentence():
+	rows = frappe.db.sql("SELECT name FROM tabposts WHERE avg_word = 0.0 AND word_count <> 0;", as_dict=True, debug=True)
+	
+	for row in rows:		
+		doc = frappe.get_doc('posts', row.name)
+		print doc.id
+		text = doc.raw
+		words = text.split()
+		tot_words = sum(len(word) for word in words)
+		l = len(words)
+		if l==0:
+			l = 1
+		average_word = float(tot_words)/l
+		print "average word = ", average_word
+		doc.avg_word = float(average_word)
+
+		wordcounts = []
+		sentences = text.split('. ')
+		for sentence in sentences:
+			words = sentence.split(' ')
+			wordcounts.append(len(words))
+		l = len(wordcounts)
+		if l==0:
+			l = 1
+		average_sentence = float(sum(wordcounts))/l
+		print "average sentence = ", average_sentence
+		doc.avg_sentence = float(average_sentence)
+		doc.save(ignore_permissions=True)
+		frappe.db.commit()
+
+	return
+
+
 

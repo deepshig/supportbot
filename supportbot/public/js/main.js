@@ -137,7 +137,7 @@ var chat =
 			{
 				chat.add_comment('Thank You for all the interaction. We have stored your details. We will contact you whenever there is an update regarding your domain of work', true)
 				chat.mode = 'confused'
-				chat.add_comment('You have ended this session. \n Please reload the page to start a new session.')
+				chat.add_comment('You have ended this session. \n Please reload the page to start a new session.', true)
 			}
 		})
 	},
@@ -194,6 +194,7 @@ var chat =
 
 	neural_net: function()
 	{
+		console.log('in neural_net function - main.js')
 		chat.last_question = chat.last_message_from_user;	
 		$.ajax(
 		{

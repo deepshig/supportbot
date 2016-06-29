@@ -3,7 +3,7 @@
 import psycopg2
 
 try:
-   conn = psycopg2.connect(database="search_bot", user="postgres", password="deep", host="127.0.0.1", port="5432")
+   conn = psycopg2.connect(database="supportbot", user="postgres", password="qwe", host="127.0.0.1", port="5432")
    print "Opened database successfully"
 
    cur = conn.cursor()
