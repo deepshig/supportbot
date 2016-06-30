@@ -44,6 +44,7 @@ var chat =
 			if(chat.last_message_from_user)
 			{
 				chat.fit1 = parseInt(chat.last_message_from_user)
+				console.log(chat.fit1)
 				if((chat.fit1<0) || (chat.fit1>10))
 					chat.add_comment('Please enter a legible value in the range (0, 10)', true);
 				else
@@ -195,6 +196,7 @@ var chat =
 	neural_net: function()
 	{
 		console.log('in neural_net function - main.js')
+		console.log(chat.iter)
 		chat.last_question = chat.last_message_from_user;	
 		$.ajax(
 		{
@@ -250,7 +252,7 @@ var chat =
 
 	set_log: function(message, from_bot)
 	{
-		console.log('In set_log function - main.js')
+		// console.log('In set_log function - main.js')
 		$.ajax(
 		{
 			url: '/api/method/supportbot.api.set_log',
@@ -266,11 +268,12 @@ var chat =
 				chat.isans = 0;
 			}
 		})
-		console.log('Done with set_log function - main.js')
+		// console.log('Done with set_log function - main.js')
 	},
 
 	set_fitness: function()
 	{
+		console.log(chat.fit1)
 		$.ajax(
 		{
 			url: '/api/method/supportbot.api.set_fitness',

@@ -16,6 +16,7 @@ class Neural_Network(object):
 		self.hiddenLayerSize = 3
 		
 		#Weights (parameters)
+		np.random.seed(1)
 		self.W1 = np.random.randn(self.inputLayerSize,self.hiddenLayerSize)
 		self.W2 = np.random.randn(self.hiddenLayerSize,self.outputLayerSize)
 		
@@ -38,6 +39,9 @@ class Neural_Network(object):
 	def costFunction(self, X, y):
 		#Compute cost for given X,y, use weights already stored in class.
 		self.yHat = self.forward(X)
+		self.error = y-self.yHat
+		# print "error"
+		# print self.error
 		J = 0.5*sum((y-self.yHat)**2)
 		return J
 		
@@ -180,6 +184,17 @@ def neural_network():
 
 	T = trainer(NN)
 	T.train(X, Y)
+	print "Y"
+	print Y
+
+	print "yhat"
+	print NN.yHat
+	
+	err = np.mean(np.abs(NN.error))
+	print "NN.error"
+	print NN.error
+	print err
+
 	print "W1"
 	print NN.W1
 
@@ -198,7 +213,8 @@ def neural_network():
 				'no_params': no_parameters,
 				'hidden_size': NN.hiddenLayerSize,
 				'syn1': _syn1,
-				'syn2': _syn2
+				'syn2': _syn2,
+				'error': err
 			}).insert()
 	frappe.db.commit()
 

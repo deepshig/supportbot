@@ -17,6 +17,7 @@ def get_answer(question, start=0):
 @frappe.whitelist(allow_guest=True)
 def set_fitness(_fit, name):
 	#print "In set_fitness : api.py"
+	print "fitness value passed : ", _fit
 	doc = frappe.get_doc('posts', name)
 
 	if doc.from_neural==0:		
@@ -28,10 +29,11 @@ def set_fitness(_fit, name):
 		new_fit = float(new_fit)/no_rev
 
 		doc.no_reviewed = no_rev
+		print "modified fitness value : ", new_fit	
 		doc.fitness = float(new_fit)
 
 	else:
-		doc.fitness = float(_fit)
+		doc.fitness = float(_fit)/10
 		doc.from_neural = 0
 		doc.no_reviewed = 1
 
