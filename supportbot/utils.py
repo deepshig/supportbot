@@ -59,7 +59,7 @@ def import_posts():
 	return
 
 def import_docs():
-	out = frappe.db.sql("""SELECT AVG(`reads`) AS avg_r, AVG(like_score) AS avg_l, AVG(incoming_link_count) AS avg_in FROM tabposts;""", as_dict=True, debug=True)
+	# out = frappe.db.sql("""SELECT AVG(`reads`) AS avg_r, AVG(like_score) AS avg_l, AVG(incoming_link_count) AS avg_in FROM tabposts;""", as_dict=True, debug=True)
 
 	for root, dirs, files in os.walk("/home/frappe-office/en"):
 		for file in files:
@@ -68,13 +68,13 @@ def import_docs():
 				with open(file_path, 'r') as content_file:
 					content = content_file.read()
 					frappe.get_doc({
-							'doctype': 'posts',
+							'doctype': 'doc_posts',
 							'raw': unicode(content, 'utf-8'),
 							'created_at': now(),
 							'reply_to_post_number': 0,
-							'incoming_link_count': out[0].avg_in,
-							'reads': out[0].avg_r,
-							'like_score': out[0].avg_l,
+							'incoming_link_count': 0,
+							'reads': 0,
+							'like_score': 0,
 							'word_count': len(content.split()),
 							'fitness': 0.0,
 							'is_doc': 1,
@@ -86,10 +86,10 @@ def import_docs():
 	return
 
 def update_avg_word_sentence():
-	rows = frappe.db.sql("SELECT name FROM tabposts WHERE avg_word = 0.0 AND word_count <> 0;", as_dict=True, debug=True)
+	rows = frappe.db.sql("SELECT name FROM tabdoc_posts WHERE avg_word = 0.0 AND word_count <> 0;", as_dict=True, debug=True)
 	
 	for row in rows:		
-		doc = frappe.get_doc('posts', row.name)
+		doc = frappe.get_doc('doc_posts', row.name)
 		print doc.id
 		text = doc.raw
 		words = text.split()

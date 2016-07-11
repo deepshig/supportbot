@@ -12,9 +12,9 @@ class posts(Document):
 def on_doctype_update():
 	'''create index when posts table is created if missing'''
 	if not frappe.db.sql("""show index from `tabposts`
-		where Key_name="text_index" """):
+		where Key_name="post_index" """):
 		frappe.db.commit()
-		frappe.db.sql("""create fulltext index text_index on tabposts (raw);""")
+		frappe.db.sql("""create fulltext index post_index on tabposts (raw);""")
 
 	# rows = frappe.db.sql("SELECT name FROM tabposts;", as_dict=True, debug=True)
 

@@ -4,10 +4,14 @@ from frappe.utils import now
 
 @frappe.whitelist(allow_guest=True)
 def get_answer(question, start=0):
+	print "In get_answer() : api.py"
 	
-	out = frappe.db.sql("""SELECT name, raw, MATCH(raw) AGAINST(%s IN NATURAL LANGUAGE MODE) AS score FROM tabposts WHERE MATCH(raw) AGAINST(%s IN NATURAL LANGUAGE MODE) and created_at >= '2014-01-01' ORDER BY score DESC LIMIT {start}, 1 ;""".format(start=start), (question, question), as_dict=True, debug=True)
+	out = frappe.db.sql("""SELECT name, raw, MATCH(raw) 
+		AGAINST(%s IN NATURAL LANGUAGE MODE) AS score FROM tabposts 
+		WHERE MATCH(raw) AGAINST(%s IN NATURAL LANGUAGE MODE) 
+		ORDER BY score DESC LIMIT {start}, 1 ;""".format(start=start), (question, question), as_dict=True, debug=True)
 
-	#print out
+	print start, out
 
 	if out:
 		return out[0]
@@ -69,6 +73,26 @@ def feed_detail(unam, email, cntry, dmn, fb):
 			}).insert()
 	frappe.db.commit()
 	return
+
+@frappe.whitelist(allow_guest=True)
+def increment_like(name):
+	doc = frappe.get_doc('posts', name)
+	doc.like_score = doc.like_score + 1
+	doc.save(ignore_permissions=True)
+	frappe.db.commit()
+	return
+
+@frappe.whitelist(allow_guest=True)
+def unanswered_question(session, question):
+	frappe.get_doc({
+			'doctype': 'unanswered_questions',
+			'session_id': session,
+			'question': question,
+			'timestamp': now()
+		}).insert()
+	frappe.db.commit()
+	return
+
 
 
 

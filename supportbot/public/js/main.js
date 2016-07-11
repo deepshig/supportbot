@@ -112,7 +112,7 @@ var chat =
 				chat.email_id1 = chat.last_message_from_user;
 				chat.mode = 'feed_details'
 				chat.feed_detail()
-				chat.add_comment('Thank You. \n Do ping us the next time you are in need')
+				chat.add_comment('Thank You. \n Do ping us the next time you are in need', true)
 			}
 			else
 				chat.add_comment('Trust us.. We wont spam you!', true)
@@ -122,6 +122,7 @@ var chat =
 
 	feed_detail: function()
 	{
+		console.log("In feed_detail function")
 		$.ajax(
 		{
 			url: '/api/method/supportbot.api.feed_detail',
@@ -196,56 +197,127 @@ var chat =
 	neural_net: function()
 	{
 		console.log('in neural_net function - main.js')
-		console.log(chat.iter)
-		chat.last_question = chat.last_message_from_user;	
+		console.log(chat.iter) 
+		if (chat.iter>14)
+		{
+			chat.iter = 0;
+			chat.add_comment('I guess thats enough for this question! Phew..I am tired finding answers for you! Do you wish to ask something more?')
+			chat.ques_or_intro();	
+		}
+		else
+		{
+			chat.last_question = chat.last_message_from_user;	
+			$.ajax(
+			{
+				url: '/api/method/supportbot.neural_net.answer',
+				data:
+				{
+					question: chat.last_question,
+					i: chat.iter
+				},
+				dataType: 'json',
+				success: function(r)
+				{
+					if(r.message) 
+					{
+						chat.name1 = r.message.name;
+						console.log(chat.name1)
+						chat.isans = 1;
+						chat.add_comment('I found this:\n\n' + markdown(r.message.raw), true);
+						
+						chat.add_comment('Do you want another answer for this question?', true);
+						chat.isoption = 1;
+						chat.add_option(
+						[
+							{
+								label: 'Yes',
+								action: function() 
+								{
+									// get another answer
+									chat.iter++;
+									chat.last_message_from_user = chat.last_question;
+									chat.neural_net();
+								}
+							},
+							{
+								label: 'No',
+								action: function() 
+								{
+									chat.iter = 0;
+									chat.add_comment('So, were you satisfied with this answer?', true)
+									chat.ask_feedback(chat.last_question, chat.name1)
+								}
+							}
+						]);					
+					} 
+					else 
+					{
+						chat.add_comment('Sorry could not find anything for that query. Do you wish to ask something else?', true);
+						chat.ques_or_intro();
+					}	
+				}
+			})
+		}
+	},
+
+	ask_feedback: function(question, name)
+	{
+		chat.add_option(
+			[
+				{
+					label: 'Yes',
+					action: function() 
+					{
+						chat.add_comment('Thank You for this feedback. We are pleased to fulfill your request.', true)
+						chat.add_comment('May we help you out with something else?', true)
+						chat.increment_like(name)
+						chat.ques_or_intro();
+					}
+				},
+				{
+					label: 'No',
+					action: function() 
+					{
+						chat.add_comment('Sorry. We will forward your question to the experts and they will get back to you soon', true)
+						chat.add_comment('May we help you out with something else?', true)
+						chat.unanswered_question(question)
+						chat.ques_or_intro();	
+					}
+				}
+			]);		
+	},
+
+	unanswered_question: function(question1)
+	{
 		$.ajax(
 		{
-			url: '/api/method/supportbot.neural_net.answer',
+			url: '/api/method/supportbot.api.unanswered_question',
 			data:
 			{
-				question: chat.last_question,
-				i: chat.iter
-			},
+				session: chat.session1,
+				question: question1
+			},	
 			dataType: 'json',
-			success: function(r)
+			success: function()
 			{
-				if(r.message) 
-				{
-					chat.name1 = r.message.name;
-					console.log(chat.name1)
-					chat.isans = 1;
-					chat.add_comment('I found this:\n\n' + markdown(r.message.raw), true);
-					
-					chat.add_comment('Do you want another answer for this question?', true);
-					chat.isoption = 1;
-					chat.add_option(
-					[
-						{
-							label: 'Yes',
-							action: function() 
-							{
-								// get another answer
-								chat.iter++;
-								chat.last_message_from_user = chat.last_question;
-								chat.neural_net();
-							}
-						},
-						{
-							label: 'No',
-							action: function() 
-							{
-								chat.iter = 0;
-								chat.add_comment('Oh.. Okay.. Do you want to know something else?', true)
-								chat.ques_or_intro();
-							}
-						}
-					]);					
-				} 
-				else 
-				{
-					chat.add_comment('Sorry could not find anything for that query. Do you wish to ask something else?', true);
-					chat.ques_or_intro();
-				}	
+				console.log('question stored in database')
+			}
+		})
+	},
+
+	increment_like: function(name1)
+	{
+		$.ajax(
+		{
+			url: '/api/method/supportbot.api.increment_like',
+			data:
+			{
+				name: name1
+			},	
+			dataType: 'json',
+			success: function()
+			{
+				console.log("Like incremented")
 			}
 		})
 	},

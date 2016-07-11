@@ -1,12 +1,13 @@
 #!/usr/bin/python
 
+# Original code available at
+# https://github.com/stephencwelch/Neural-Networks-Demystified
+
 from scipy import optimize
 import numpy as np
 import random
 import frappe
 import json
-
-# max_answers = 15
 
 class Neural_Network(object):
 	def __init__(self, no_parameters):        
@@ -137,14 +138,16 @@ def gen_vector(name, max_word, max_link, max_like, max_read):
 	link = float(doc.incoming_link_count)/max_link
 	fit_x = float(doc.fitness)
 	isdoc = float(doc.is_doc)
+	avg_word = float(doc.avg_word)
+	avg_sentence = float(doc.avg_sentence)
 	if(doc.reply_to_post_number):
 		reply = float(1)
 	else:
 		reply = float(0)
-	no_parameters = 6
-	parameter_list = ["word", "like", "read", "link", "reply", "isdoc"]
+	no_parameters = 4
+	parameter_list = ["avg_sentence", "avg_word", "word", "like"]
 	parameter_list = json.dumps(parameter_list)
-	x_in = np.array([word, like, read, link, reply, isdoc])
+	x_in = np.array([avg_sentence, avg_word, word, like])
 	return (x_in, fit_x, no_parameters, parameter_list)
 
 def gen_ip_op():
@@ -184,6 +187,10 @@ def neural_network():
 
 	T = trainer(NN)
 	T.train(X, Y)
+
+	print "X"
+	print X
+	
 	print "Y"
 	print Y
 
@@ -242,6 +249,7 @@ def calculate_fitness(syn1, syn2, max_link, max_word, max_like, max_read):
 		doc.save(ignore_permissions=True)
 		frappe.db.commit()
 
+	print "DONE"
 	return
 
 

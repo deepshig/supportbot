@@ -29,16 +29,28 @@ def neural_network(question):
 @frappe.whitelist(allow_guest=True)
 def answer(question, i=0):
 	print "In answer() : neural_net.py"
+	print "question : ", question
+	print "i = ", i
 	Y, name = neural_network(question)
-	# print Y
-	# print name
 
-	# print "name array at value = ", i
-	# print name[i]
+	print Y
+	print name
+
+	# for j in range(0, len(name)):
+	# 	print "name array at value = ", j
+	# 	print name[j][0]
 	
-	if(len(name) == 0):
-		return false
+	# if(len(name) == 0):
+	# 	return false
 
-	doc = frappe.get_doc('posts', str(name[i][0]))
-	return doc
+	print "currently i = ", i
+	print name[i][0]
+
+	if name.size:
+		doc = frappe.get_doc('posts', name[i][0])
+		return doc
+	else:
+		return ''
+
+	
 
