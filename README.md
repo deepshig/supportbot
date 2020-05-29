@@ -21,15 +21,17 @@ Once created, the bot was trained with a few questions and this training was use
 
 A suitable User Interface is also created using Javascript and AJAX queries.
 
+A detailed documentation for the project can be found [here](./resources/THEMAKINGOFASUPPORTBOT.pdf)
+
 ## User Interface
 
-![Input Question](./images/input_question.png)
+![Input Question](./resources/input_question.png)
 Input Question
 
-![Output Question](./images/output_question.png)
+![Output Question](./resources/output_question.png)
 Output Answer
 
-![User Login Database](./images/user_login_db.png)
+![User Login Database](./resources/user_login_db.png)
 Admin user login DB
 
 ## Key Features
